@@ -10,5 +10,8 @@
     "fa"
   ],
   "author": "tbarna",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "onoff": "^3.2.2"
+  }
 }
