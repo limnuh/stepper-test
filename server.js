@@ -1,11 +1,8 @@
-const Gpio = require('onoff').Gpio;
-const led = new Gpio(17, 'out');
-const button = new Gpio(14, 'in', 'both');
- 
+// Transpile all code following this line with babel and use 'env' (aka ES6) preset.
+require('babel-register')({
+    presets: [ 'env' ]
+})
 
-console.log('run!!!!')
-//led.writeSync(1);
-button.watch((err, value) => {
-    console.log({err, value})
-    led.writeSync(value);
-});
+// Import the rest of our application.
+if (process.env.LED) return module.exports = require('./led.js');
+module.exports = require('./stepper.js')
