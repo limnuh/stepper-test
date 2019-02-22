@@ -7,4 +7,6 @@ require('babel-register')({
 
 // Import the rest of our application.
 if (process.env.LED) return module.exports = require('./src/led.js');
-module.exports = require('./src/stepper.js')
+if (process.env.STEPPER) return module.exports = require('./src/stepper.js');
+
+module.exports = require('./src/square.js')

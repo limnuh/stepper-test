@@ -3,10 +3,10 @@ import { Gpio } from 'onoff';
 const enablePin = new Gpio(14, 'out');
 const dirPin = new Gpio(15, 'out');
 const stepPin = new Gpio(18, 'out');
-const stepLength = 0;
-const waitLength = 0;
+const stepLength = 2;
+const waitLength = 5;
 
-let stepCount = 1000;
+let stepCount = 2560;
 const sleep = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
 const stepSome = async (dir, count, next) => {
@@ -14,6 +14,7 @@ const stepSome = async (dir, count, next) => {
   dirPin.writeSync(dir);
   for (let i = 0; i < count; i++) {
     stepPin.writeSync(1);
+    console.log(i)
     await sleep(stepLength);
     stepPin.writeSync(0);
     await sleep(waitLength);
