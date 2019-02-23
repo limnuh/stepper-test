@@ -1,3 +1,5 @@
+console.log(23434)
+
 import { Gpio } from 'onoff';
 
 const led = new Gpio(17, 'out');
