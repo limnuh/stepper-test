@@ -11,7 +11,7 @@ const sign = a => {
   return 0;
 }
 
-export default function motorsStep(motor1, step1, motor2, step2, speed){
+export default async function motorsStep(motor1, step1, motor2, step2, speed){
   const dir1 = sign(step1); 
   const dir2 = sign(step2);
   const absStep1 = Math.abs(step1);
@@ -33,17 +33,28 @@ export default function motorsStep(motor1, step1, motor2, step2, speed){
   const T = Math.sqrt( absStep1 * absStep1 + absStep2 * absStep2 ) / speed;
   const dt = T / total_micro_step;
 
-  for(let i = 1; i < total_micro_step; i++ ){
-    let time_laps = 0;
-
-    if ((i % micro_step1) === 0 ){
-      motor1.stepp(dir1, 1, dt/4);
-      time_laps += dt/4.0;
+  async function asyncForEach(array, cb) {
+    for ( let index = 0; index < array.length; index++ ){
+      await cb(array[index], index, array)
     }
-    if ((i % micro_step2) === 0){
-      motor2.stepp(dir2, 1, dt/4);
-      time_laps += dt/4.0;
-    }
-    // time.sleep(dt-time_laps);
   }
+
+
+  const start = async () => {
+    await asyncForEach([...Array(total_micro_step).keys()], async (i) => {
+      let time_laps = 0;
+
+      if ((i % micro_step1) === 0 ){
+        await motor1.stepp(dir1, 1, dt/4);
+        time_laps += dt/4.0;
+      }
+      if ((i % micro_step2) === 0){
+        await motor2.stepp(dir2, 1, dt/4);
+        time_laps += dt/4.0;
+      }
+      // time.sleep(dt-time_laps); 
+    });
+  }
+
+  start();
 }

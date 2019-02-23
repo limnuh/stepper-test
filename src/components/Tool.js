@@ -1,11 +1,5 @@
 import { Gpio } from 'onoff';
 
-const Gpio = () => ({
-  writeSync: (value) => {
-    // console.log('writeSync: ', value)
-  }
-});
-
 export default class Tool {
   constructor({ toolPin }) {
     this.tool = new Gpio(toolPin, 'out');

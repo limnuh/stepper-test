@@ -6,12 +6,6 @@ import { argv, option } from 'yargs';
 import fs from 'fs';
 import readline from 'readline';
 
-const Gpio = () => ({
-  writeSync: (value) => {
-    console.log('writeSync: ', value)
-  }
-});
-
 const MX = new StepperMotor({ enPin: 14, dirPin: 15, stepPin: 18 });
 const MY = new StepperMotor({ enPin: 16, dirPin: 20, stepPin: 21 });
 const laser = new Tool({ toolPin: 19 });
@@ -20,9 +14,9 @@ let dy=0.075; //resolution in y direction. Unit: mm
 
 option('filepath', { alias: 'f', default: 'sample.nc' });
 option('manual', { alias: 'm', default: false });
-option('speed', { alias: 's', default: 0.1 });
+option('speed', { alias: 's', default: 1 });
 
-let Engraving_speed = 0.1 //unit=mm/sec=0.04in/sec
+let Engraving_speed = 0.01 //unit=mm/sec=0.04in/sec
 if (argv.speed > 0)	Engraving_speed = argv.speed;
 const speed = Engraving_speed / Math.min(dx,dy);
 
@@ -43,14 +37,10 @@ const XYposition = (lines) => {
   let i;
   const xchar_loc = lines.indexOf('X');
   i = xchar_loc + 1;
-  console.log('lines[i]: ', lines[i])
-  console.log('ord(lines[i]): ', ord(lines[i]))
-  console.log('i: ', i)
   while(isANumber(lines[i])){
 
     i++;
   }
-  console.log('lmivaaaaaa ')
   const x_pos = parseFloat(lines.substring(xchar_loc + 1, i));
   
   const ychar_loc = lines.indexOf('Y');
@@ -64,7 +54,6 @@ const XYposition = (lines) => {
 }
 
 const IJposition = lines => {
-  console.log('lines22222', lines)
   //given a G02 or G03 movement command line, return the I J position
   const ichar_loc = lines.indexOf('I');
   let i;
@@ -84,7 +73,7 @@ const IJposition = lines => {
   return [i_pos, j_pos];
 }
 
-const moveto = (MotorX, x_pos, dx, MotorY, y_pos, dy, speed) => {
+async function moveto(MotorX, x_pos, dx, MotorY, y_pos, dy, speed){
   //Move to (x_pos,y_pos) (in real unit)
   const stepx = parseInt(Math.round( x_pos / dx )) - MotorX.position;
   const stepy = parseInt(Math.round( y_pos / dy )) - MotorY.position;
@@ -93,7 +82,7 @@ const moveto = (MotorX, x_pos, dx, MotorY, y_pos, dy, speed) => {
           
   if (Total_step > 0){
     console.log('movement: Dx=', stepx, '  Dy=', stepy);
-    motorsControl(MotorX, stepx, MotorY, stepy, speed);
+    await motorsControl(MotorX, stepx, MotorY, stepy, speed);
   }
 }
 
@@ -114,30 +103,29 @@ rl.on('line', lines => {
     case '':
       break;
     case 'G90': 
-      console.log('start');
       break;
     case 'G20': 
       dx /= 25.4;
       dy /= 25.4;
-      console.log('Working in inch');
+      //console.log('Working in inch');
       break;
     case 'G21':
-      console.log('Working in mm');
+      //console.log('Working in mm');
       break;
     case 'M02':
     case 'M05':
       laseroff();
-      console.log('Laser turned off');
+      //console.log('Laser turned off');
       break;
     case 'M03':
     case 'M04':
       laseron();
-      console.log('Laser turned on');
+      //console.log('Laser turned on');
       break;
     case 'G00':
     case 'G1 ':
     case 'G01':
-      console.log('G 1 :::::::');
+      //console.log('G 1 :::::::');
       if (lines.indexOf('X') === -1 || lines.indexOf('Y') === -1) {
         break;
       }
