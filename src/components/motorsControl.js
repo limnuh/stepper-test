@@ -1,6 +1,10 @@
 import StepperMotor from './StepperMotor';
 import Tool from './Tool';
 
+function sleep(timeout) {
+  return new Promise((resolve) => setTimeout(resolve, timeout));
+}
+
 export default class MotorControl{
   constructor(xSettings, ySettings, toolSeetings){
     this.MX = new StepperMotor(xSettings);
@@ -23,13 +27,19 @@ export default class MotorControl{
     return 0;
   }
 
+  async stepp({motor, dir}){
+    if (motor === 1) await this.MX.stepp(dir);
+    if (motor === 2) await this.MY.stepp(dir);
+    return;
+  }
+
   createMotorStepps({xPos, dx, yPos, dy}){
     const step1 = parseInt(Math.round( xPos / dx )) - this.MX.position;
-    const step2 = parseInt(Math.round( xPos / dy )) - this.MY.position;
+    const step2 = parseInt(Math.round( yPos / dy )) - this.MY.position;
     const Total_step = Math.sqrt((step1 * step1 + step2 * step2));
 
     if (Total_step <= 0) return [];
-    
+
     const dir1 = this.sign(step1); 
     const dir2 = this.sign(step2);
     const absStep1 = Math.abs(step1);
@@ -39,22 +49,22 @@ export default class MotorControl{
     let total_micro_step = this.lcm(absStep1, absStep2);
     let micro_step1 = total_micro_step / absStep1;
     let micro_step2 = total_micro_step / absStep2;
-    if (absStep1 === 0) {
+    if (absStep1 === 0){
       total_micro_step = absStep2;
-      const micro_step2 = 1;
-      const micro_step1 = absStep2 + 100;
+      micro_step2 = 1;
+      micro_step1 = absStep2 + 100;
     } else if (absStep2 === 0){
       total_micro_step = absStep1;
-      const micro_step1 = 1;
-      const micro_step2 = absStep1 + 100;
+      micro_step1 = 1;
+      micro_step2 = absStep1 + 100;
     }
 
     for (let i = 0; i < total_micro_step; i++){
       if ((i % micro_step1) === 0 ){
-        stepps.push({motor: 1, dir: dir1, step: 1});
+        stepps.push({motor: 1, dir: dir1});
       }
       if ((i % micro_step2) === 0){
-        stepps.push({motor: 2, dir: dir2, step: 1});
+        stepps.push({motor: 2, dir: dir2});
       }
     }
     return stepps;
