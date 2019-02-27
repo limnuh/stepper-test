@@ -57,7 +57,12 @@ export default function parseGcode(settings, next) {
 
   const ordersArray = [];
 
+  let xPos;
+  let yPos;
+
   rl.on('line', lines => {
+    let oldXPos = xPos;
+    let oldYPos = yPos;
     switch(lines.substring(0, 3)) {
       case 'G1F ':
       case '':
@@ -90,57 +95,62 @@ export default function parseGcode(settings, next) {
         if (lines.substring(0, 3) === 'G00'){
           ordersArray.push({type: 'tool', value: 0});
         }
-        const [ xPos, yPos ] = XYposition(lines);
+        [ xPos, yPos ] = XYposition(lines);
         ordersArray.push({type: 'move', xPos, yPos});
         
         break;
+      case 'G02':
+      case 'G2 ':
+      case 'G03':
+      case 'G3 ':
+        if (lines.indexOf('X') === -1 || lines.indexOf('Y') === -1 || lines.indexOf('I') === -1 || lines.indexOf('J') === -1) {
+          break;
+        }
+  
+        [ xPos, yPos ] = XYposition(lines);
+        const [ iPos, jPos ] = IJposition(lines);
+
+        const xCenter=oldXPos+iPos;
+        const yCenter=oldYPos+jPos;
+
+        const dx = xPos - xCenter;
+        const dy = yPos - yCenter;
+    
+        const r = Math.sqrt( iPos * iPos + jPos * jPos );
+
+        const e1 = [-iPos, -jPos];
+
+        let e2 = [ -e1[1], e1[0] ];
+        if ( lines.substring(0, 3) === 'G02' ) {
+          e2 = [ e1[1], -e1[0] ];   
+        }
+
+        let costheta = ( Dx * e1[0] + Dy * e1[1] ) / r * r;
+        let sintheta = ( Dx * e2[0] + Dy * e2[1] ) / r * r; 
+
+        if ( costheta > 1) {
+          costheta = 1;
+        } else if (costheta < -1) {
+          costheta = -1;
+        }
+
+        let theta = Math.acos(costheta);
+        if ( sintheta < 0 ){
+          theta = 2.0 * Math.PI - theta;
+        }
+
+        let no_step = parseInt( Math.round( r * theta / dx / 5.0 ) );
+
+        for (var i = 1; i <= no_step; i++) {
+          const tmp_theta = i * theta / no_step;
+          const tmpXPos = xcenter + e1[0] * Math.cos(tmp_theta) + e2[0] * sin(tmp_theta);
+          const tmpYPos = ycenter + e1[1] * Math.cos(tmp_theta) + e2[1] * sin(tmp_theta);
+          moveto(MX,tmp_x_pos,dx,MY, tmp_y_pos,dy,speed,True);
+          ordersArray.push({type: 'move', xPos: tmpXPos, yPos: tmpYPos});
+        }
+
+        break;
     }; 
-        
-    // elif (lines[0:3]=='G02')|(lines[0:3]=='G03'): #circular interpolation
-    //     if (lines.find('X') != -1 and lines.find('Y') != -1 and lines.find('I') != -1 and lines.find('J') != -1):
-    //         laseron()
-    //         old_x_pos=x_pos;
-    //         old_y_pos=y_pos;
-  
-    //         [x_pos,y_pos]=XYposition(lines);
-    //         [i_pos,j_pos]=IJposition(lines);
-  
-    //         xcenter=old_x_pos+i_pos;   #center of the circle for interpolation
-    //         ycenter=old_y_pos+j_pos;
-        
-        
-    //         Dx=x_pos-xcenter;
-    //         Dy=y_pos-ycenter;      #vector [Dx,Dy] points from the circle center to the new position
-        
-    //         r=sqrt(i_pos**2+j_pos**2);   # radius of the circle
-        
-    //         e1=[-i_pos,-j_pos]; #pointing from center to current position
-    //         if (lines[0:3]=='G02'): #clockwise
-    //             e2=[e1[1],-e1[0]];      #perpendicular to e1. e2 and e1 forms x-y system (clockwise)
-    //         else:                   #counterclockwise
-    //             e2=[-e1[1],e1[0]];      #perpendicular to e1. e1 and e2 forms x-y system (counterclockwise)
-  
-    //         #[Dx,Dy]=e1*cos(theta)+e2*sin(theta), theta is the open angle
-  
-    //         costheta=(Dx*e1[0]+Dy*e1[1])/r**2;
-    //         sintheta=(Dx*e2[0]+Dy*e2[1])/r**2;        #theta is the angule spanned by the circular interpolation curve
-                
-    //         if costheta>1:  # there will always be some numerical errors! Make sure abs(costheta)<=1
-    //             costheta=1;
-    //         elif costheta<-1:
-    //             costheta=-1;
-  
-    //         theta=arccos(costheta);
-    //         if sintheta<0:
-    //             theta=2.0*pi-theta;
-  
-    //         no_step=int(round(r*theta/dx/5.0));   # number of point for the circular interpolation
-            
-    //         for i in range(1,no_step+1):
-    //             tmp_theta=i*theta/no_step;
-    //             tmp_x_pos=xcenter+e1[0]*cos(tmp_theta)+e2[0]*sin(tmp_theta);
-    //             tmp_y_pos=ycenter+e1[1]*cos(tmp_theta)+e2[1]*sin(tmp_theta);
-    //             moveto(MX,tmp_x_pos,dx,MY, tmp_y_pos,dy,speed,True);
   });
 
   rl.on('close', () => {
@@ -148,6 +158,6 @@ export default function parseGcode(settings, next) {
       res: resolution,
       ordersArray
     });
-  })
-  
+  });
+
 }
