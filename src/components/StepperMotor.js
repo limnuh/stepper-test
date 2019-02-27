@@ -1,6 +1,5 @@
-// import { Gpio } from 'onoff';
-
-const Gpio = () => ({writeSync: () => {} })
+import { Gpio } from 'onoff';
+// const Gpio = () => ({writeSync: () => {} })
 
 export default class StepperMotor {
   constructor({ enPin, dirPin, stepPin, delay, steppLength, name, resolution }) {

@@ -1,6 +1,5 @@
-// import { Gpio } from 'onoff';
-
-const Gpio = () => ({writeSync: () => {} })
+import { Gpio } from 'onoff';
+// const Gpio = () => ({writeSync: () => {} })
 
 export default class Tool {
   constructor({ toolPin }) {
