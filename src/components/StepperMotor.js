@@ -1,7 +1,4 @@
-// import { Gpio } from 'onoff';
-const Gpio = () => ({
-  writeSync: () => {}
-});
+import { Gpio } from 'onoff';
 
 export default class StepperMotor {
   constructor({ enPin, dirPin, stepPin, delay, steppLength, name, resolution }) {
@@ -21,9 +18,8 @@ export default class StepperMotor {
   }
 
   async stepp(dir) {
-    console.log(new Date(), {dir, name: this.name, pos: this.position});
     this.enable(true); //move upper
-    const direction = dir === 1;
+    const direction = (dir === 1 ? 1 : 0);
     this.dirPin.writeSync(direction);
     this.stepPin.writeSync(1);
     await this.sleep(this.steppLength);

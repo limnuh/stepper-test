@@ -4,7 +4,7 @@ import { argv, option } from 'yargs';
 
 option('filepath', { alias: 'f', default: 'sample.nc' });
 option('manual', { alias: 'm', default: false });
-option('delay', { alias: 'd', default: 5 }); //ms
+option('delay', { alias: 'd', default: 2 }); //ms
 
 let defaultResolution = 0.04;
 const xSeetings = { enPin: 14, dirPin: 15, stepPin: 18, delay: argv.delay, resolution: defaultResolution, name: 'X' };
@@ -22,11 +22,15 @@ parseGcode({resolution: defaultResolution, filepath: argv.filepath}, ({ordersArr
   
   if(res !== defaultResolution) motorsControl.setResolution(res);
   let stepps = [];
+  let prevXPos = 0;
+  let prevYPos = 0;
   ordersArray.map(order => {
     //laser ....
     if ( order.type === 'move' ) {
       const {xPos, yPos} = order;
-      const mStepps = motorsControl.createMotorStepps({xPos, yPos});
+      const mStepps = motorsControl.createMotorStepps({xPos, yPos, prevXPos, prevYPos});
+      prevXPos = xPos;
+      prevYPos = yPos;
 
       if (mStepps) stepps = stepps.concat(mStepps);
     }

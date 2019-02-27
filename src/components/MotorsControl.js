@@ -1,10 +1,6 @@
 import StepperMotor from './StepperMotor';
 import Tool from './Tool';
 
-function sleep(timeout) {
-  return new Promise((resolve) => setTimeout(resolve, timeout));
-}
-
 export default class MotorControl{
   constructor(xSettings, ySettings, toolSeetings){
     this.MX = new StepperMotor(xSettings);
@@ -38,15 +34,16 @@ export default class MotorControl{
     this.MY.resolution = resolution;
   }
 
-  createMotorStepps({xPos, yPos}){
-    const step1 = parseInt(Math.round( xPos / this.MX.resolution )) - this.MX.position;
-    const step2 = parseInt(Math.round( yPos / this.MY.resolution )) - this.MY.position;
+  createMotorStepps({xPos, yPos, prevXPos, prevYPos}){
+    const step1 = parseInt(Math.round( ( xPos - prevXPos ) / this.MX.resolution ));
+    const step2 = parseInt(Math.round( ( yPos - prevYPos ) / this.MY.resolution ));
     const Total_step = Math.sqrt((step1 * step1 + step2 * step2));
 
     if (Total_step <= 0) return [];
 
     const dir1 = this.sign(step1); 
     const dir2 = this.sign(step2);
+
     const absStep1 = Math.abs(step1);
     const absStep2 = Math.abs(step2);
     const stepps = [];
