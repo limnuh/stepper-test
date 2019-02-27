@@ -12,7 +12,7 @@ export default class MotorControl{
     this.laser = new Tool(toolSeetings);
   }
 
-  gcd = (a, b) => {
+  gcd(a, b){
     if (!b) return a;
     return this.gcd(b, a % b);
   }
@@ -33,9 +33,14 @@ export default class MotorControl{
     return;
   }
 
-  createMotorStepps({xPos, dx, yPos, dy}){
-    const step1 = parseInt(Math.round( xPos / dx )) - this.MX.position;
-    const step2 = parseInt(Math.round( yPos / dy )) - this.MY.position;
+  setResolution(resolution) {
+    this.MX.resolution = resolution;
+    this.MY.resolution = resolution;
+  }
+
+  createMotorStepps({xPos, yPos}){
+    const step1 = parseInt(Math.round( xPos / this.MX.resolution )) - this.MX.position;
+    const step2 = parseInt(Math.round( yPos / this.MY.resolution )) - this.MY.position;
     const Total_step = Math.sqrt((step1 * step1 + step2 * step2));
 
     if (Total_step <= 0) return [];

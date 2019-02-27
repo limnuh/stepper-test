@@ -4,35 +4,33 @@ import { argv, option } from 'yargs';
 
 option('filepath', { alias: 'f', default: 'sample.nc' });
 option('manual', { alias: 'm', default: false });
-option('delay', { alias: 'd', default: 100 }); //ms
+option('delay', { alias: 'd', default: 5 }); //ms
 
-const resolution = 0.04;
-const xSeetings = { enPin: 14, dirPin: 15, stepPin: 18, delay: argv.delay, resolution, name: 'X' };
-const ySeetings = { enPin: 16, dirPin: 20, stepPin: 21, delay: argv.delay, resolution, name: 'Y' };
+let defaultResolution = 0.04;
+const xSeetings = { enPin: 14, dirPin: 15, stepPin: 18, delay: argv.delay, resolution: defaultResolution, name: 'X' };
+const ySeetings = { enPin: 16, dirPin: 20, stepPin: 21, delay: argv.delay, resolution: defaultResolution, name: 'Y' };
 const toolSeetings = { toolPin: 19 };
 const motorsControl = new MotorsControl(xSeetings, ySeetings, toolSeetings);
 
 async function asyncForEach(array, cb) {
   for ( let index = 0; index < array.length; index++ ){
-    await cb(array[index], index, array)
+    await cb(array[index], index, array);
   }
 }
 
-function sleep(timeout) {
-  return new Promise((resolve) => setTimeout(resolve, timeout));
-}
-
-parseGcode({resolution, filepath: argv.filepath}, ordersArray => {
+parseGcode({resolution: defaultResolution, filepath: argv.filepath}, ({ordersArray, res}) => {
+  
+  if(res !== defaultResolution) motorsControl.setResolution(res);
   let stepps = [];
   ordersArray.map(order => {
     //laser ....
     if ( order.type === 'move' ) {
-      const {xPos, dx, yPos, dy} = order;
-      const mStepps = motorsControl.createMotorStepps({xPos, dx, yPos, dy})
+      const {xPos, yPos} = order;
+      const mStepps = motorsControl.createMotorStepps({xPos, yPos});
+
       if (mStepps) stepps = stepps.concat(mStepps);
     }
   });
-
   const start = async () => {
     asyncForEach(stepps, async (order, index) => {
       await motorsControl.stepp({...order});
@@ -40,6 +38,4 @@ parseGcode({resolution, filepath: argv.filepath}, ordersArray => {
   }
 
   start();
-
-  console.log(stepps.length)
 });

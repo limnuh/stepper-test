@@ -4,7 +4,7 @@ const Gpio = () => ({
 });
 
 export default class StepperMotor {
-  constructor({ enPin, dirPin, stepPin, delay, steppLength, name }) {
+  constructor({ enPin, dirPin, stepPin, delay, steppLength, name, resolution }) {
     this.enablePin = new Gpio(enPin, 'out');
     this.dirPin = new Gpio(dirPin, 'out');
     this.stepPin = new Gpio(stepPin, 'out');
@@ -12,6 +12,7 @@ export default class StepperMotor {
     this.steppLength = steppLength || 2;
     this.position = 0;
     this.name = name;
+    this.resolution = resolution;
   }
 
   enable(value) {

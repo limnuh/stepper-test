@@ -91,7 +91,7 @@ export default function parseGcode(settings, next) {
           ordersArray.push({type: 'tool', value: 0});
         }
         const [ xPos, yPos ] = XYposition(lines);
-        ordersArray.push({type: 'move', xPos, dx: resolution, yPos, dy: resolution});
+        ordersArray.push({type: 'move', xPos, yPos});
         
         break;
     }; 
@@ -144,7 +144,10 @@ export default function parseGcode(settings, next) {
   });
 
   rl.on('close', () => {
-    next(ordersArray);
+    next({
+      res: resolution,
+      ordersArray
+    });
   })
   
 }
