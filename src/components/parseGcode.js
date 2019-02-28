@@ -57,12 +57,13 @@ export default function parseGcode(settings, next) {
 
   const ordersArray = [];
 
-  let xPos;
-  let yPos;
+  let xPos = 0;
+  let yPos = 0;
 
   rl.on('line', lines => {
     let oldXPos = xPos;
     let oldYPos = yPos;
+    console.log('------ ', lines, ' -------' )
     switch(lines.substring(0, 3)) {
       case 'G1F ':
       case '':
@@ -110,8 +111,8 @@ export default function parseGcode(settings, next) {
         [ xPos, yPos ] = XYposition(lines);
         const [ iPos, jPos ] = IJposition(lines);
 
-        const xCenter=oldXPos+iPos;
-        const yCenter=oldYPos+jPos;
+        const xCenter = oldXPos + iPos;
+        const yCenter = oldYPos + jPos;
 
         const dx = xPos - xCenter;
         const dy = yPos - yCenter;
@@ -125,8 +126,8 @@ export default function parseGcode(settings, next) {
           e2 = [ e1[1], -e1[0] ];   
         }
 
-        let costheta = ( Dx * e1[0] + Dy * e1[1] ) / r * r;
-        let sintheta = ( Dx * e2[0] + Dy * e2[1] ) / r * r; 
+        let costheta = ( dx * e1[0] + dy * e1[1] ) / r * r;
+        let sintheta = ( dx * e2[0] + dy * e2[1] ) / r * r; 
 
         if ( costheta > 1) {
           costheta = 1;
@@ -139,13 +140,12 @@ export default function parseGcode(settings, next) {
           theta = 2.0 * Math.PI - theta;
         }
 
-        let no_step = parseInt( Math.round( r * theta / dx / 5.0 ) );
-
+        let no_step = parseInt( Math.round( r * theta / resolution / 5.0 ) );
+console.log(111, {no_step, theta, resolution, r, rrr: (r * theta / resolution / 5.0)})
         for (var i = 1; i <= no_step; i++) {
           const tmp_theta = i * theta / no_step;
-          const tmpXPos = xcenter + e1[0] * Math.cos(tmp_theta) + e2[0] * sin(tmp_theta);
-          const tmpYPos = ycenter + e1[1] * Math.cos(tmp_theta) + e2[1] * sin(tmp_theta);
-          moveto(MX,tmp_x_pos,dx,MY, tmp_y_pos,dy,speed,True);
+          const tmpXPos = xCenter + e1[0] * Math.cos(tmp_theta) + e2[0] * Math.sin(tmp_theta);
+          const tmpYPos = yCenter + e1[1] * Math.cos(tmp_theta) + e2[1] * Math.sin(tmp_theta);
           ordersArray.push({type: 'move', xPos: tmpXPos, yPos: tmpYPos});
         }
 
@@ -154,6 +154,7 @@ export default function parseGcode(settings, next) {
   });
 
   rl.on('close', () => {
+    console.log('asd', ordersArray)
     next({
       res: resolution,
       ordersArray
