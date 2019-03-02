@@ -16,7 +16,9 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-stage-2": "^6.24.1",
     "babel-register": "^6.24.1",
+    "express": "^4.15.2",
     "onoff": "^3.2.2",
+    "socket.io": "^2.2.0",
     "yargs": "^13.2.1"
   },
   "devDependencies": {

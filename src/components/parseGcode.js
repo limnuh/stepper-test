@@ -1,6 +1,7 @@
 
 import fs from 'fs';
 import readline from 'readline';
+import stream from 'stream';
 
 const ord = (str) => {
   if (!str) return false;
@@ -49,9 +50,18 @@ const IJposition = lines => {
 }
 
 export default function parseGcode(settings, next) {
-  let {resolution} = settings;
+  let { resolution } = settings;
+  let input;
+  if (settings.text) {
+    const buf = new Buffer(settings.text);
+    var bufferStream = new stream.PassThrough();
+    bufferStream.end(buf);
+    input = bufferStream;
+  } else {
+    input = fs.createReadStream(settings.filepath)
+  }
   const rl = readline.createInterface({
-    input: fs.createReadStream(settings.filepath),
+    input,
     crlfDelay: Infinity
   });
 
@@ -63,7 +73,6 @@ export default function parseGcode(settings, next) {
   rl.on('line', lines => {
     let oldXPos = xPos;
     let oldYPos = yPos;
-    console.log('------ ', lines, ' -------' )
     switch(lines.substring(0, 3)) {
       case 'G1F ':
       case '':
@@ -141,7 +150,6 @@ export default function parseGcode(settings, next) {
         }
 
         let no_step = parseInt( Math.round( r * theta / resolution / 5.0 ) );
-console.log(111, {no_step, theta, resolution, r, rrr: (r * theta / resolution / 5.0)})
         for (var i = 1; i <= no_step; i++) {
           const tmp_theta = i * theta / no_step;
           const tmpXPos = xCenter + e1[0] * Math.cos(tmp_theta) + e2[0] * Math.sin(tmp_theta);
@@ -154,7 +162,6 @@ console.log(111, {no_step, theta, resolution, r, rrr: (r * theta / resolution / 
   });
 
   rl.on('close', () => {
-    console.log('asd', ordersArray)
     next({
       res: resolution,
       ordersArray

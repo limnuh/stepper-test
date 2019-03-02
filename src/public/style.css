@@ -1,0 +1,31 @@
+ * {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 1000px;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.leftPanel{
+  float: right;
+  background-color: darkolivegreen;
+  padding: 20px;
+  position: relative;
+}
+
+.leftPanel label{
+  color: #fff;
+}
+
+.whiteboard {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+}
