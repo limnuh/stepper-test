@@ -10,7 +10,7 @@ html, body {
 }
 
 .leftPanel{
-  float: right;
+  float: left;
   background-color: darkolivegreen;
   padding: 20px;
   position: relative;
@@ -28,4 +28,13 @@ html, body {
   right: 0;
   bottom: 0;
   top: 0;
+
+  transform: rotate(180deg);
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
 }
+
+
+

@@ -131,7 +131,7 @@ export default function parseGcode(settings, next) {
         const e1 = [-iPos, -jPos];
 
         let e2 = [ -e1[1], e1[0] ];
-        if ( lines.substring(0, 3) === 'G02' ) {
+        if ( lines.substring(0, 3) === 'G02' || lines.substring(0, 3) === 'G2 '  ) {
           e2 = [ e1[1], -e1[0] ];   
         }
 
