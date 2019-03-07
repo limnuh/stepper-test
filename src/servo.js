@@ -1,4 +1,5 @@
-import { Gpio } from 'pigpio';
+console.log('ok')
+const Gpio = require('pigpio').Gpio
 
 const motor = new Gpio(10, {mode: Gpio.OUTPUT});
 
