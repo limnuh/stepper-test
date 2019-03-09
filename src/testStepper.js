@@ -1,8 +1,8 @@
 import { Gpio } from 'onoff';
 
-const enablePin = new Gpio(14, 'out');
-const dirPin = new Gpio(15, 'out');
-const stepPin = new Gpio(18, 'out');
+const enablePin = new Gpio(16, 'out');
+const dirPin = new Gpio(20, 'out');
+const stepPin = new Gpio(21, 'out');
 const stepLength = 0;
 const waitLength = 0;
 

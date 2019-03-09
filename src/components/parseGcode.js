@@ -15,7 +15,6 @@ const XYposition = (lines) => {
   const xchar_loc = lines.indexOf('X');
   i = xchar_loc + 1;
   while(isANumber(lines[i])){
-
     i++;
   }
   const x_pos = parseFloat(lines.substring(xchar_loc + 1, i));
@@ -77,11 +76,10 @@ export default function parseGcode(settings, next) {
       case 'G1F ':
       case '':
       case 'G90': 
+      case 'G21':
         break;
       case 'G20': 
         resolution /= 25.4;
-        break;
-      case 'G21':
         break;
       case 'M02':
       case 'M2 ':
@@ -150,7 +148,7 @@ export default function parseGcode(settings, next) {
         }
 
         let no_step = parseInt( Math.round( r * theta / resolution / 5.0 ) );
-        for (var i = 1; i <= no_step; i++) {
+        for (let i = 1; i <= no_step; i++) {
           const tmp_theta = i * theta / no_step;
           const tmpXPos = xCenter + e1[0] * Math.cos(tmp_theta) + e2[0] * Math.sin(tmp_theta);
           const tmpYPos = yCenter + e1[1] * Math.cos(tmp_theta) + e2[1] * Math.sin(tmp_theta);

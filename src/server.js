@@ -1,6 +1,6 @@
 import express from 'express';
 import http from 'http';
-import cnc from './cnc';
+import cnc from './testCnc';
 
 const app = express();
 const server = http.Server(app);
@@ -11,8 +11,8 @@ app.use(express.static(__dirname + '/public'));
 
 function onConnection(socket){
   socket.on('runCode', (text) => {
-    cnc(text.code, (prevXPos, prevYPos, xPos, yPos) => {
-      socket.emit('runCode', {prevXPos, prevYPos, xPos, yPos});
+    cnc(text.code, (lineSettings) => {
+      socket.emit('runCode', lineSettings);
     });
   });
 }

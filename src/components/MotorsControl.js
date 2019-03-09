@@ -5,7 +5,7 @@ export default class MotorControl{
   constructor(xSettings, ySettings, toolSeetings){
     this.MX = new StepperMotor(xSettings);
     this.MY = new StepperMotor(ySettings);
-    this.laser = new Tool(toolSeetings);
+    this.tool = new Tool(toolSeetings);
   }
 
   gcd(a, b){
@@ -23,9 +23,9 @@ export default class MotorControl{
     return 0;
   }
 
-  async stepp({motor, dir}){
-    if (motor === 1) await this.MX.stepp(dir);
-    if (motor === 2) await this.MY.stepp(dir);
+  async stepp({type, dir}){
+    if (type === 1) await this.MX.stepp(dir);
+    if (type === 2) await this.MY.stepp(dir);
     return;
   }
 
@@ -63,10 +63,10 @@ export default class MotorControl{
 
     for (let i = 0; i < total_micro_step; i++){
       if ((i % micro_step1) === 0 ){
-        stepps.push({motor: 1, dir: dir1});
+        stepps.push({type: 1, dir: dir1});
       }
       if ((i % micro_step2) === 0){
-        stepps.push({motor: 2, dir: dir2});
+        stepps.push({type: 2, dir: dir2});
       }
     }
     return stepps;

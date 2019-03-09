@@ -9,16 +9,17 @@ option('delay', { alias: 'd', default: 2 }); //ms
 let defaultResolution = 0.04;
 const xSeetings = { enPin: 14, dirPin: 15, stepPin: 18, delay: argv.delay, resolution: defaultResolution, name: 'X' };
 const ySeetings = { enPin: 16, dirPin: 20, stepPin: 21, delay: argv.delay, resolution: defaultResolution, name: 'Y' };
-const toolSeetings = { toolPin: 19 };
+const toolSeetings = { toolPin: 10, waitingTime: 100 };
 const motorsControl = new MotorsControl(xSeetings, ySeetings, toolSeetings);
 
-async function asyncForEach(array, cb) {
+async function asyncForEach(array, cb, end) {
   for ( let index = 0; index < array.length; index++ ){
     await cb(array[index], index, array);
   }
+  end();
 }
 
-export default function run(text, draw = () => {}){
+export default function run(text, drawToScreen = () => {}){
   parseGcode({resolution: defaultResolution, filepath: argv.filepath, text}, ({ordersArray, res}) => {
   
     if(res !== defaultResolution) motorsControl.setResolution(res);
@@ -26,10 +27,12 @@ export default function run(text, draw = () => {}){
     let prevXPos = 0;
     let prevYPos = 0;
     ordersArray.map(order => {
-      //laser ....
+      if (order.type === 'tool') {
+        stepps = stepps.concat({type: 'tool', value: order.value ? true : false });
+      }
       if ( order.type === 'move' ) {
         const {xPos, yPos} = order;
-        draw(prevXPos, prevYPos, xPos, yPos)
+        //
         const mStepps = motorsControl.createMotorStepps({xPos, yPos, prevXPos, prevYPos});
         prevXPos = xPos;
         prevYPos = yPos;
@@ -38,9 +41,31 @@ export default function run(text, draw = () => {}){
       }
     });
     const start = async () => {
+      prevXPos = 0;
+      prevYPos = 0;
+      let xPos = 0;
+      let yPos = 0;
+      motorsControl.MX.disable(false);
+      motorsControl.MY.disable(false);
       asyncForEach(stepps, async (order, index) => {
-        await motorsControl.stepp({...order});
+        prevXPos = motorsControl.MX.position;
+        prevYPos = motorsControl.MY.position;
+        if(order.type === 1 || order.type === 2) {
+          await motorsControl.stepp(order);
+          xPos = motorsControl.MX.position;
+          yPos = motorsControl.MY.position;
+          drawToScreen({prevXPos, prevYPos, xPos, yPos, color: motorsControl.tool.drawState ? 'black' : 'red'});
+        }
+        if(order.type === 'tool') {
+          await motorsControl.tool.draw(order.value);
+        }
+      }, async () => {
+        motorsControl.MX.disable(true);
+        motorsControl.MY.disable(true);
+        await motorsControl.tool.draw(false);
+        motorsControl.tool.disable();
       });
+      
     }
   
     start();

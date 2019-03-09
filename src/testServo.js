@@ -13,14 +13,14 @@ setLeft()
 
 function setLeft(){
   setTimeout(() => {
-    piblaster.setPwm(pin, range(0));
+    piblaster.setPwm(pin, range(5));
     setRight();
   }, 1000);
 }
 
 function setRight(){
   setTimeout(() => {
-    piblaster.setPwm(pin, range(30));
+    piblaster.setPwm(pin, range(25));
     setLeft();
   }, 1000);
 }

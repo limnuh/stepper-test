@@ -50,8 +50,8 @@
   function onDrawingEvent(data){
     const w = canvas.width;
     const h = canvas.height;
-    const {prevXPos, prevYPos, xPos, yPos} = multiple(data, 20);
-    drawLine(prevXPos, prevYPos, xPos, yPos, 'black');
+    const {prevXPos, prevYPos, xPos, yPos} = multiple(data, 1);
+    drawLine(prevXPos, prevYPos, xPos, yPos, data.color);
   }
 
   // make the canvas fill its parent
