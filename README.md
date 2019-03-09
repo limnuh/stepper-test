@@ -10,5 +10,6 @@ default: node server.js
 
 Required: https://github.com/sarfata/pi-blaster
  - start pi-blaster: sudo ./pi-blaster
+ - config: sudo pi-blaster --gpio 10
 
 
