@@ -4,7 +4,7 @@ import { argv, option } from 'yargs';
 
 option('filepath', { alias: 'f', default: __dirname + '/example/sample.nc' });
 option('manual', { alias: 'm', default: false });
-option('delay', { alias: 'd', default: 2 }); //ms
+option('delay', { alias: 'd', default: 1 }); //ms
 
 let defaultResolution = 0.04;
 const xSeetings = { enPin: 14, dirPin: 15, stepPin: 18, delay: argv.delay, resolution: defaultResolution, name: 'X' };

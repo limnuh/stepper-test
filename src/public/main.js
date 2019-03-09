@@ -5,10 +5,12 @@
   var socket = io();
   var canvas = document.getElementsByClassName('whiteboard')[0];
   var runButton = document.getElementById('run');
+  var clearButton = document.getElementById('clear');
   var gcodeTextarea = document.getElementById('gcode');
   var context = canvas.getContext('2d');
 
   runButton.addEventListener('click', onRunCode, false);
+  clearButton.addEventListener('click', clearCanvas, false);
 
   function onRunCode (){
     socket.emit('runCode', { code: gcodeTextarea.value });
@@ -19,11 +21,9 @@
   window.addEventListener('resize', onResize, false);
   onResize();
 
-  drawLine(0, 0, 0, 0, 'white', true);
-  drawLine(0, 0, 1000, 0, 'black', true);
-  drawLine(1000, 0, 1000, 1000, 'black', true);
-  drawLine(1000, 1000, 0, 1000, 'black', true);
-  drawLine(0, 1000, 0, 0, 'black', true);
+  function clearCanvas() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
 
   function drawLine(x0, y0, x1, y1, color, emit){

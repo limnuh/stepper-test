@@ -6,7 +6,7 @@ export default class StepperMotor {
     this.dirPin = new Gpio(dirPin, 'out');
     this.stepPin = new Gpio(stepPin, 'out');
     this.delay = delay || 5;
-    this.steppLength = steppLength || 2;
+    this.steppLength = steppLength || 1;// it was 2
     this.position = 0;
     this.name = name;
     this.resolution = resolution;
