@@ -63,7 +63,7 @@ export default class MotorControl{
 
     for (let i = 0; i < total_micro_step; i++){
       if ((i % micro_step1) === 0 ){
-        stepps.push({type: 1, dir: dir1});
+        stepps.push({type: 1, dir: -dir1}); // X axis mirror
       }
       if ((i % micro_step2) === 0){
         stepps.push({type: 2, dir: dir2});

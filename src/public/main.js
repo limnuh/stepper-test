@@ -22,8 +22,10 @@
   onResize();
 
   function clearCanvas() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.clearRect(0, 1000, canvas.width, canvas.height);
   }
+
+  clearCanvas()
 
 
   function drawLine(x0, y0, x1, y1, color, emit){
@@ -41,9 +43,9 @@
   }
 
   const multiple = ({prevXPos, prevYPos, xPos, yPos}, times) => ({ 
-    prevXPos: prevXPos * times,
+    prevXPos: prevXPos * times + 1000,
     prevYPos: prevYPos * times,
-    xPos: xPos * times,
+    xPos: xPos * times + 1000,
     yPos: yPos * times
   });
 

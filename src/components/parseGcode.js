@@ -101,13 +101,14 @@ export default function parseGcode(settings, next) {
       case 'M04':
       ordersArray.push({type: 'tool', value: 1});
         break;
+      case 'G0 ':
       case 'G00':
       case 'G1 ':
       case 'G01':
         if (lines.indexOf('X') === -1 || lines.indexOf('Y') === -1) {
           break;
         }
-        if (lines.substring(0, 3) === 'G00'){
+        if (lines.substring(0, 3) === 'G00' || lines.substring(0, 3) === 'G0 '){
           ordersArray.push({type: 'tool', value: 0});
         }
         [ xPos, yPos ] = XYposition(lines);

@@ -10,8 +10,8 @@ option('dryRun', { alias: 'dry', default: false });
 let piblaster =  {setPwm: () => {}};
 let Gpio = () => ({writeSync: () => {} })
 
-if (argv.dryRun) {
-  piblaster = require('../../pi-blaster.js');
+if (!argv.dryRun) {
+  piblaster = require('../pi-blaster.js');
   Gpio = require('onoff').Gpio;
 }
 

@@ -33,6 +33,6 @@ export default class Tool {
   }
 
   async disable() {
-    piblaster.setPwm(this.toolPin, 0);
+    this.piblaster.setPwm(this.toolPin, 0);
   }
 };
