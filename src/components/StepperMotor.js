@@ -1,7 +1,5 @@
-import { Gpio } from 'onoff';
-
 export default class StepperMotor {
-  constructor({ enPin, dirPin, stepPin, delay, steppLength, name, resolution }) {
+  constructor({ enPin, dirPin, stepPin, delay, steppLength, name, resolution, Gpio }) {
     this.enablePin = new Gpio(enPin, 'out');
     this.dirPin = new Gpio(dirPin, 'out');
     this.stepPin = new Gpio(stepPin, 'out');

@@ -5,12 +5,21 @@ import { argv, option } from 'yargs';
 option('filepath', { alias: 'f', default: __dirname + '/example/sample.nc' });
 option('manual', { alias: 'm', default: false });
 option('delay', { alias: 'd', default: 1 }); //ms
+option('dryRun', { alias: 'dry', default: false });
+
+let piblaster =  {setPwm: () => {}};
+let Gpio = () => ({writeSync: () => {} })
+
+if (argv.dryRun) {
+  piblaster = require('../../pi-blaster.js');
+  Gpio = require('onoff').Gpio;
+}
 
 let defaultResolution = 0.04;
 const xSeetings = { enPin: 14, dirPin: 15, stepPin: 18, delay: argv.delay, resolution: defaultResolution, name: 'X' };
 const ySeetings = { enPin: 16, dirPin: 20, stepPin: 21, delay: argv.delay, resolution: defaultResolution, name: 'Y' };
 const toolSeetings = { toolPin: 10, waitingTime: 100 };
-const motorsControl = new MotorsControl(xSeetings, ySeetings, toolSeetings);
+const motorsControl = new MotorsControl(xSeetings, ySeetings, toolSeetings, piblaster, Gpio);
 
 async function asyncForEach(array, cb, end) {
   for ( let index = 0; index < array.length; index++ ){

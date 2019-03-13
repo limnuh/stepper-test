@@ -1,12 +1,11 @@
-import piblaster from '../../pi-blaster.js';
-
 export default class Tool {
-  constructor({ toolPin, waitingTime }) {
+  constructor({ toolPin, waitingTime, piblaster }) {
     this.max = 25;
     this.min = 10;
     this.waitingTime = waitingTime || 200;
     this.toolPin = toolPin || 10;
     this.drawState = false;
+    this.piblaster = piblaster;
   }
 
   sleep(timeout) {
@@ -22,12 +21,12 @@ export default class Tool {
 
   async draw(value) {
     if (value){
-      piblaster.setPwm(this.toolPin, this.range(this.max));
+      this.piblaster.setPwm(this.toolPin, this.range(this.max));
       this.drawState = true;
       await this.sleep(this.waitingTime)
     }
     if (!value){
-      piblaster.setPwm(this.toolPin, this.range(this.min));
+      this.piblaster.setPwm(this.toolPin, this.range(this.min));
       this.drawState = false;
       await this.sleep(this.waitingTime)
     }

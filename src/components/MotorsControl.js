@@ -2,10 +2,10 @@ import StepperMotor from './StepperMotor';
 import Tool from './Tool';
 
 export default class MotorControl{
-  constructor(xSettings, ySettings, toolSeetings){
-    this.MX = new StepperMotor(xSettings);
-    this.MY = new StepperMotor(ySettings);
-    this.tool = new Tool(toolSeetings);
+  constructor(xSettings, ySettings, toolSeetings, piblaster, Gpio){
+    this.MX = new StepperMotor({ Gpio, ...xSettings });
+    this.MY = new StepperMotor({ Gpio, ...ySettings });
+    this.tool = new Tool({ piblaster, ...toolSeetings });
   }
 
   gcd(a, b){
