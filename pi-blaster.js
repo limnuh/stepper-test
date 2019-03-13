@@ -12,7 +12,7 @@ var PI_BLASTER_PATH = '/dev/pi-blaster';
  * @param {Function} callback Must accept only one optional error parameter
  */
 function writeCommand(cmd, callback) {
-	var buffer = new Buffer(cmd + '\n');
+	var buffer = Buffer.from(cmd + '\n');
 	var fd = fs.open(PI_BLASTER_PATH, 'w', undefined, function(err, fd) {
 		if (err) {
 			if (callback && typeof callback == 'function') {callback(err)};

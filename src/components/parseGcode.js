@@ -3,6 +3,13 @@ import fs from 'fs';
 import readline from 'readline';
 import stream from 'stream';
 
+//grbl
+const DEFAULT_ARC_TOLERANCE = 0.002;
+const ARC_ANGULAR_TRAVEL_EPSILON = 5E-7;
+const M_PI = 3.14159265358979323846;
+const N_ARC_CORRECTION = 12;
+//
+
 const ord = (str) => {
   if (!str) return false;
   return str.charCodeAt(0);
@@ -52,7 +59,7 @@ export default function parseGcode(settings, next) {
   let { resolution } = settings;
   let input;
   if (settings.text) {
-    const buf = new Buffer(settings.text);
+    const buf = Buffer.from(settings.text);
     var bufferStream = new stream.PassThrough();
     bufferStream.end(buf);
     input = bufferStream;
@@ -114,48 +121,73 @@ export default function parseGcode(settings, next) {
         if (lines.indexOf('X') === -1 || lines.indexOf('Y') === -1 || lines.indexOf('I') === -1 || lines.indexOf('J') === -1) {
           break;
         }
-  
+// https://github.com/zxzhaixiang/Laser_engraver_system_RaspberryPI/blob/master/Gcode_executer.py#L194
+// https://github.com/grbl/grbl/blob/master/grbl/motion_control.c#L112
+// { position, target, offset, radius }
         [ xPos, yPos ] = XYposition(lines);
         const [ iPos, jPos ] = IJposition(lines);
-
         const xCenter = oldXPos + iPos;
         const yCenter = oldYPos + jPos;
-
-        const dx = xPos - xCenter;
-        const dy = yPos - yCenter;
-    
-        const r = Math.sqrt( iPos * iPos + jPos * jPos );
-
-        const e1 = [-iPos, -jPos];
-
-        let e2 = [ -e1[1], e1[0] ];
-        if ( lines.substring(0, 3) === 'G02' || lines.substring(0, 3) === 'G2 '  ) {
-          e2 = [ e1[1], -e1[0] ];   
+        const center_axis0 = oldXPos + iPos;
+        const center_axis1 = oldYPos + jPos;
+        let r_axis0 = -iPos;  // Radius vector from center to current location
+        let r_axis1 = -jPos;
+        const rt_axis0 = xPos - center_axis0;
+        const rt_axis1 = yPos - center_axis1;
+        const radius = Math.sqrt( iPos * iPos + jPos * jPos );
+        let angular_travel = Math.atan2(r_axis0 * rt_axis1 - r_axis1 * rt_axis0, r_axis0 * rt_axis0 + r_axis1 * rt_axis1);
+        let is_clockwise_arc = false;
+        
+        if ( lines.substring(0, 3) === 'G02' || lines.substring(0, 3) === 'G2 ' ) {
+          is_clockwise_arc = true;
         }
 
-        let costheta = ( dx * e1[0] + dy * e1[1] ) / r * r;
-        let sintheta = ( dx * e2[0] + dy * e2[1] ) / r * r; 
-
-        if ( costheta > 1) {
-          costheta = 1;
-        } else if (costheta < -1) {
-          costheta = -1;
+        if ( is_clockwise_arc ) { // Correct atan2 output per direction
+          if (angular_travel >= -ARC_ANGULAR_TRAVEL_EPSILON) { angular_travel -= 2 * M_PI; }
+        } else {
+          if (angular_travel <= ARC_ANGULAR_TRAVEL_EPSILON) { angular_travel += 2 * M_PI; }
         }
 
-        let theta = Math.acos(costheta);
-        if ( sintheta < 0 ){
-          theta = 2.0 * Math.PI - theta;
+        const segments = Math.floor(Math.abs( 0.5 * angular_travel * radius ) / Math.sqrt( DEFAULT_ARC_TOLERANCE * ( 2 * radius - DEFAULT_ARC_TOLERANCE)) );
+  
+        if (!segments) {
+          ordersArray.push({type: 'move', xPos, yPos});
+          break;
         }
+        const theta_per_segment = angular_travel / segments;
+        let cos_T = 2.0 - theta_per_segment * theta_per_segment;
+        const sin_T = theta_per_segment * 0.16666667 * ( cos_T + 4.0 );
+        cos_T *= 0.5;
 
-        let no_step = parseInt( Math.round( r * theta / resolution / 5.0 ) );
-        for (let i = 1; i <= no_step; i++) {
-          const tmp_theta = i * theta / no_step;
-          const tmpXPos = xCenter + e1[0] * Math.cos(tmp_theta) + e2[0] * Math.sin(tmp_theta);
-          const tmpYPos = yCenter + e1[1] * Math.cos(tmp_theta) + e2[1] * Math.sin(tmp_theta);
+        let sin_Ti;
+        let cos_Ti;
+        let r_axisi;
+        let i;
+        let count = 0;
+      
+        for (i = 1; i < segments; i++) { // Increment (segments-1).
+          
+          if (count < N_ARC_CORRECTION) {
+            r_axisi = r_axis0 * sin_T + r_axis1 * cos_T;
+            r_axis0 = r_axis0 * cos_T - r_axis1 * sin_T;
+            r_axis1 = r_axisi;
+            count++;
+          } else {      
+            cos_Ti = Math.cos( i * theta_per_segment );
+            sin_Ti = Math.sin( i * theta_per_segment );
+            r_axis0 = -iPos * cos_Ti + jPos * sin_Ti;
+            r_axis1 = -iPos * sin_Ti - jPos * cos_Ti;
+            count = 0;
+          }
+      
+          const tmpXPos = center_axis0 + r_axis0;
+          const tmpYPos = center_axis1 + r_axis1;
           ordersArray.push({type: 'move', xPos: tmpXPos, yPos: tmpYPos});
-        }
 
+        }
         break;
+
+//        
     }; 
   });
 
